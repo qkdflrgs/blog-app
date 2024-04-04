@@ -2,6 +2,7 @@ import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { app } from "firebaseApp";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function SignUpForm() {
   const [error, setError] = useState<string>("");
@@ -9,13 +10,15 @@ export default function SignUpForm() {
   const [password, setPassword] = useState<string>("");
   const [passwordConfirm, setPasswordConfirm] = useState<string>("");
 
-  const onSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const auth = getAuth(app);
       await createUserWithEmailAndPassword(auth, email, password);
-    } catch (error) {
+      toast.success("회원가입에 성공했습니다.");
+    } catch (error: any) {
       console.log(error);
+      toast.error(error?.code);
     }
   };
 
@@ -73,6 +76,7 @@ export default function SignUpForm() {
             id="email"
             required
             onChange={onChange}
+            value={email}
           />
         </div>
         <div className="form__block">
@@ -83,6 +87,7 @@ export default function SignUpForm() {
             id="password"
             required
             onChange={onChange}
+            value={password}
           />
         </div>
         <div className="form__block">
@@ -93,6 +98,7 @@ export default function SignUpForm() {
             id="password_confirm"
             required
             onChange={onChange}
+            value={passwordConfirm}
           />
         </div>
         {error && error?.length > 0 && (
