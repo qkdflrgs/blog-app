@@ -6,12 +6,12 @@ import PostNew from "../pages/posts/new";
 import ProfilePage from "../pages/profile";
 import SignInPage from "../pages/signin";
 import SignUpPage from "../pages/signup";
-import { useState } from "react";
 
-export default function Router() {
-  // To Do: firebase Auth 인증이 완료되면 true로 변경되는 로직 추가
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+interface RouterProps {
+  isAuthenticated: boolean;
+}
 
+export default function Router({ isAuthenticated }: RouterProps) {
   return (
     <Routes>
       {isAuthenticated ? (
