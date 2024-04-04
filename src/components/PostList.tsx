@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 
 interface PostListProps {
   hasNavigation?: boolean;
-  defaultTap?: TapType;
+  defaultTap?: TapType | CategoryType;
 }
 export interface PostProps {
   id?: string;
@@ -26,7 +26,16 @@ export interface PostProps {
   createAt: string;
   updatedAt?: string;
   uid: string;
+  category: CategoryType;
 }
+
+export type CategoryType = "Frontend" | "Backend" | "Web" | "Native";
+export const CATEGORY: CategoryType[] = [
+  "Frontend",
+  "Backend",
+  "Web",
+  "Native",
+];
 
 type TapType = "all" | "my";
 
@@ -34,7 +43,9 @@ export default function PostList({
   hasNavigation = true,
   defaultTap = "all",
 }: PostListProps) {
-  const [activeTab, setActiveTab] = useState<TapType>(defaultTap);
+  const [activeTab, setActiveTab] = useState<TapType | CategoryType>(
+    defaultTap
+  );
   const [posts, setPosts] = useState<PostProps[]>([]);
   const { user } = useContext(AuthContext);
 
@@ -45,8 +56,10 @@ export default function PostList({
 
     if (activeTab === "my" && user) {
       postsQuery = query(postsRef, where("uid", "==", user.uid));
-    } else {
+    } else if (activeTab === "all") {
       postsQuery = query(postsRef, orderBy("createAt", "desc"));
+    } else {
+      postsQuery = query(postsRef, where("category", "==", activeTab));
     }
     const data = await getDocs(postsQuery);
     data?.forEach((doc) => {
@@ -89,6 +102,18 @@ export default function PostList({
           >
             나의 글
           </div>
+          {CATEGORY?.map((category) => (
+            <div
+              key={category}
+              role="presentation"
+              onClick={() => setActiveTab(category)}
+              className={
+                activeTab === category ? "post__navigation--active" : ""
+              }
+            >
+              {category}
+            </div>
+          ))}
         </div>
       )}
       <div className="post__list">
