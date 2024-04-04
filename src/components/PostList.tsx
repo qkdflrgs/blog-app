@@ -1,5 +1,13 @@
 import AuthContext from "context/AuthContext";
-import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "firebaseApp";
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -7,6 +15,7 @@ import { toast } from "react-toastify";
 
 interface PostListProps {
   hasNavigation?: boolean;
+  defaultTap?: TapType;
 }
 export interface PostProps {
   id?: string;
@@ -14,21 +23,32 @@ export interface PostProps {
   email: string;
   summary: string;
   content: string;
-  createdAt: string;
+  createAt: string;
   updatedAt?: string;
   uid: string;
 }
 
 type TapType = "all" | "my";
 
-export default function PostList({ hasNavigation = true }: PostListProps) {
-  const [activeTab, setActiveTab] = useState<TapType>("all");
+export default function PostList({
+  hasNavigation = true,
+  defaultTap = "all",
+}: PostListProps) {
+  const [activeTab, setActiveTab] = useState<TapType>(defaultTap);
   const [posts, setPosts] = useState<PostProps[]>([]);
   const { user } = useContext(AuthContext);
 
   const getPosts = async () => {
-    const data = await getDocs(collection(db, "posts"));
     setPosts([]);
+    let postsRef = collection(db, "posts");
+    let postsQuery;
+
+    if (activeTab === "my" && user) {
+      postsQuery = query(postsRef, where("uid", "==", user.uid));
+    } else {
+      postsQuery = query(postsRef, orderBy("createAt", "desc"));
+    }
+    const data = await getDocs(postsQuery);
     data?.forEach((doc) => {
       const dataObject = {
         ...doc.data(),
@@ -49,7 +69,7 @@ export default function PostList({ hasNavigation = true }: PostListProps) {
 
   useEffect(() => {
     getPosts();
-  }, []);
+  }, [activeTab]);
 
   return (
     <>
@@ -79,7 +99,7 @@ export default function PostList({ hasNavigation = true }: PostListProps) {
                 <div className="post__profile-box">
                   <div className="post__profile" />
                   <div className="post__author-name">{post.email}</div>
-                  <div className="post__date">{post.createdAt}</div>
+                  <div className="post__date">{post.createAt}</div>
                 </div>
                 <div className="post__title">{post.title}</div>
                 <div className="post__text">{post.summary}</div>
