@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export default function SingInForm() {
+export default function SignInForm() {
   return (
     <>
       <form action="/post" method="POST" className="form form--lg">
